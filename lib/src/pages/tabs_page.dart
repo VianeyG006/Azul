@@ -135,7 +135,7 @@ class _TabsPage extends State<TabsPage> {
               TextButton(
                   onPressed: () {
                     _dismissDialog();
-                    passwordController.text == null;
+                    _addItem();
                   },
                   child: Text('Cerrar')),
               TextButton(
@@ -149,13 +149,20 @@ class _TabsPage extends State<TabsPage> {
                     _dismissDialog();
                     _error();
                   }
-                  passwordController.text == '';
+                  _addItem();
                 },
                 child: Text('Hecho'),
               )
             ],
           );
         });
+  }
+
+  _addItem() {
+    passwordController.clear();
+    setState(() {
+      //tasks.add(value);
+    });
   }
 
   _dismissDialog() {

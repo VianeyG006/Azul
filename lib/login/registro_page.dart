@@ -375,25 +375,15 @@ class _RegistroPageState extends State<RegistroPage> {
   }
 
   Future<void> verificarDatos() async {
-    if (imagen == null) {
-      showDialog(
-          context: context,
-          builder: (c) {
-            return ErrorAlertDialog(
-              message: "Selecciona una imagen de perfil",
-            );
-          });
-    } else {
-      passwordControler.text == password2Controler.text
-          ? emailControler.text.isNotEmpty &&
-                  passwordControler.text.isNotEmpty &&
-                  password2Controler.text.isNotEmpty &&
-                  nameControler.text.isNotEmpty &&
-                  fechaControler.text.isNotEmpty
-              ? uploadStatusImage()
-              : displayDialog("Debes llenar todos los campos!")
-          : displayDialog("Las contraseñas deben coincidir!");
-    }
+    passwordControler.text == password2Controler.text
+        ? emailControler.text.isNotEmpty &&
+                passwordControler.text.isNotEmpty &&
+                password2Controler.text.isNotEmpty &&
+                nameControler.text.isNotEmpty &&
+                fechaControler.text.isNotEmpty
+            ? uploadStatusImage()
+            : displayDialog("Debes llenar todos los campos!")
+        : displayDialog("Las contraseñas deben coincidir!");
   }
 
   displayDialog(String msg) {
@@ -417,6 +407,7 @@ class _RegistroPageState extends State<RegistroPage> {
           );
         });
     User? firebaseUser;
+    firebaseUser!.sendEmailVerification();
     await _auth
         .createUserWithEmailAndPassword(
       email: emailControler.text.trim(),

@@ -5,6 +5,7 @@ import 'package:frame_conf/src/widgets/notas_w.dart';
 import 'package:frame_conf/values/tema.dart';
 import 'package:flutter/material.dart';
 import 'package:frame_conf/login/userservices.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -19,6 +20,7 @@ class _HomePageState extends State<HomePage> {
   String urlima = "";
   late String uid;
   get index => null;
+  late String id;
   @override
   void initState() {
     super.initState();
@@ -56,7 +58,10 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ModalNota()),
+              MaterialPageRoute(
+                  builder: (context) => ModalNota(
+                        ID: "",
+                      )),
             );
             /*showModalBottomSheet(
                 context: context,
@@ -84,11 +89,27 @@ class _HomePageState extends State<HomePage> {
                   itemCount: docs.length,
                   itemBuilder: (_, i) {
                     Object? data = docs[i].data();
+
                     print("___________");
                     print(data);
-                    return NotaW(
-                      title: (data as dynamic)["title"],
-                      description: (data as dynamic)["body"],
+                    return GestureDetector(
+                      child: NotaW(
+                        title: (data as dynamic)["title"],
+                        description: (data as dynamic)["body"],
+                        fecha: (data as dynamic)["fecha"],
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ModalNota(
+                                      ID: docs[i].id,
+                                    )));
+                      },
+                      onLongPress: () {
+                        id = docs[i].id;
+                        this._borrarPersona(context);
+                      },
                     );
                     /*ListTile(
                           title: Text((data as dynamic)["titulo"]),
@@ -121,17 +142,87 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  _borrarPersona(context) {
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              title: Text("Eliminar contacto"),
+              content: Text("¿Esta seguro de que quiere eliminar esta nota"),
+              actions: [
+                TextButton(onPressed: _dismissDialog, child: Text("Cancelar")),
+                TextButton(
+                    onPressed: () async {
+                      print("ID de la nota" + id);
+                      this.setState(() {});
+                      bool respuesta = await UserServices().eliminarNota(id);
+
+                      if (respuesta) {
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Nota correctamente eliminada'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('algo salio mal'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                    child: Text(
+                      "Borrar",
+                      style: TextStyle(color: Colors.red),
+                    )),
+              ],
+            ));
+  }
+
+  _dismissDialog() {
+    Navigator.pop(context);
+  }
 }
 
 class ModalNota extends StatefulWidget {
+  final String ID;
+  ModalNota({required this.ID});
   @override
-  State<ModalNota> createState() => _ModalNotaState();
+  State<ModalNota> createState() => _ModalNotaState(ID: ID);
 }
 
 class _ModalNotaState extends State<ModalNota> {
+  final String ID;
+  _ModalNotaState({
+    required this.ID,
+  });
   final TextEditingController _tituloController = TextEditingController();
   final TextEditingController _contenidoController = TextEditingController();
   final GlobalKey<FormState> _formularioKey = GlobalKey<FormState>();
+  static final DateTime now = DateTime.now();
+  static final DateFormat formatter = DateFormat('yyyy-MM-dd');
+  late String formatted = formatter.format(now);
+  @override
+  void initState() {
+    super.initState();
+    if (ID != "") {
+      FirebaseFirestore.instance
+          .collection("notas")
+          .doc(ID)
+          .get()
+          .then((DocumentSnapshot document) {
+        print("Hola mundo:$document");
+        setState(() {
+          _tituloController.text = document["title"];
+          _contenidoController.text = document["body"];
+          formatted = document["fecha"];
+        });
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,27 +239,74 @@ class _ModalNotaState extends State<ModalNota> {
             child: SingleChildScrollView(
                 child: Column(
               children: [
-                SizedBox(
-                  height: 100,
+                const SizedBox(
+                  height: 50,
                 ),
-                TextFormField(
-                    controller: _tituloController,
-                    decoration:
-                        const InputDecoration(labelText: 'Titulo de la nota'),
-                    validator: (String? dato) {
-                      if (dato!.isEmpty) {
-                        return 'Este campo es requerido';
-                      }
-                    }),
-                TextFormField(
-                    controller: _contenidoController,
-                    decoration: const InputDecoration(labelText: 'Contenido'),
-                    maxLines: 10,
-                    validator: (String? dato) {
-                      if (dato!.isEmpty) {
-                        return 'Este campo es requerido';
-                      }
-                    }),
+                Container(
+                  alignment: Alignment.bottomRight,
+                  child: Text(
+                    "Fecha: " + formatted,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 20,
+                      fontFamily: 'Noticia',
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                const Text(
+                  'Titulo de la Nota',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 20,
+                    fontFamily: 'Noticia',
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white70)),
+                  child: TextFormField(
+                      controller: _tituloController,
+                      decoration:
+                          const InputDecoration(border: InputBorder.none),
+                      validator: (String? dato) {
+                        if (dato!.isEmpty) {
+                          return 'Este campo es requerido';
+                        }
+                      }),
+                ),
+                const SizedBox(height: 30),
+                const Text(
+                  'Contenido',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 20,
+                    fontFamily: 'Noticia',
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white70)),
+                  child: TextFormField(
+                      controller: _contenidoController,
+                      decoration:
+                          const InputDecoration(border: InputBorder.none),
+                      maxLines: 20,
+                      validator: (String? dato) {
+                        if (dato!.isEmpty) {
+                          return 'Este campo es requerido';
+                        }
+                      }),
+                ),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -176,11 +314,20 @@ class _ModalNotaState extends State<ModalNota> {
                     ElevatedButton(
                       onPressed: () async {
                         if (_formularioKey.currentState!.validate()) {
-                          bool respuesta = await UserServices().saveNotas(
-                            _tituloController.text,
-                            _contenidoController.text,
-                            usernya,
-                          );
+                          bool respuesta;
+                          if (ID == "") {
+                            respuesta = await UserServices().saveNotas(
+                              _tituloController.text,
+                              _contenidoController.text,
+                              usernya,
+                            );
+                          } else {
+                            respuesta = await UserServices().updateNotas(
+                                ID,
+                                _tituloController.text,
+                                _contenidoController.text,
+                                usernya);
+                          }
 
                           if (respuesta) {
                             Navigator.pop(context);

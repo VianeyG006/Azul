@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 class NotaW extends StatelessWidget {
   final String title;
   final String description;
-  NotaW({Key? key, required this.title, required this.description})
+  final String fecha;
+  NotaW(
+      {Key? key,
+      required this.title,
+      required this.description,
+      required this.fecha})
       : super(key: key);
 
   @override
@@ -49,10 +54,28 @@ class NotaW extends StatelessWidget {
                 right: 15,
                 top: 5,
               ),
-              height: 150,
+              height: 110,
               child: Text(
                 description,
                 style: TextStyle(
+                  fontSize: 14,
+                  fontFamily: "noticia",
+                ),
+              ),
+            ),
+            Container(
+              alignment: AlignmentDirectional.bottomEnd,
+              width: double.infinity,
+              margin: EdgeInsets.only(
+                left: 15,
+                right: 15,
+                top: 5,
+              ),
+              child: Text(
+                fecha,
+                style: TextStyle(
+                  color: Colors.blueGrey,
+                  fontWeight: FontWeight.bold,
                   fontSize: 14,
                   fontFamily: "noticia",
                 ),
