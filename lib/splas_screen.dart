@@ -50,8 +50,11 @@ class _SplashScreenState extends State<SplashScreen> {
                   child: Lottie.asset("assets/lottie/logo.json")),
               const SizedBox(height: 20.0),
               const Text(
-                "V2LFJ",
-                style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                "Azul",
+                style: TextStyle(
+                    fontSize: 50,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'estilo'),
               ),
             ],
           ),

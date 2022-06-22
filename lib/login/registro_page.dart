@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -22,6 +22,8 @@ class RegistroPage extends StatefulWidget {
 }
 
 class _RegistroPageState extends State<RegistroPage> {
+  final DateFormat formatter = DateFormat('yyyy-MM-dd');
+  String _fecha = ' ';
   TextEditingController emailControler = TextEditingController();
   TextEditingController passwordControler = TextEditingController();
   TextEditingController password2Controler = TextEditingController();
@@ -32,18 +34,12 @@ class _RegistroPageState extends State<RegistroPage> {
   final fromKey = GlobalKey<FormState>();
 
   FirebaseAuth _auth = FirebaseAuth.instance;
-
-  String userImageUri = '';
+  String genero = 'Sexo';
+  late String userImageUri;
   File? imagen;
   final picker = ImagePicker();
-
-  void initState() {
-    super.initState();
-
-    SchedulerBinding.instance!.addPostFrameCallback((timeStamp) {
-      con.init(context);
-    });
-  }
+  String? v;
+  TextEditingController _textController = new TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +145,7 @@ class _RegistroPageState extends State<RegistroPage> {
                 SizedBox(
                   height: 10,
                 ),
-                _fechaTextField(),
+                _fechaTextField(context),
                 SizedBox(
                   height: 15,
                 ),
@@ -227,23 +223,46 @@ class _RegistroPageState extends State<RegistroPage> {
     });
   }
 
-  Widget _fechaTextField() {
+  Widget _fechaTextField(BuildContext context) {
     return StreamBuilder(
         builder: (BuildContext context, AsyncSnapshot snapshot) {
       return Container(
-        padding: EdgeInsets.symmetric(horizontal: 35.0),
-        child: TextField(
-          controller: fechaControler,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            icon: Icon(Icons.date_range),
-            hintText: '12/12/2022',
-            labelText: 'Fecha de nacimiento',
-          ),
-          onChanged: (value) {},
-        ),
-      );
+          padding: EdgeInsets.symmetric(horizontal: 35.0),
+          child: TextField(
+            enableInteractiveSelection: false,
+            controller: fechaControler,
+            decoration: const InputDecoration(
+              icon: Icon(Icons.perm_contact_calendar),
+              hintText: '12-12-2022',
+              labelText: 'Fecha de nacimiento',
+            ),
+            //onChanged: (value) {},
+            onTap: () {
+              FocusScope.of(context).requestFocus(FocusNode());
+              _selecFecha(context);
+            },
+            // onChanged: (value) {},
+          ));
     });
+  }
+
+  String date = "";
+  DateTime selectedDate = DateTime.now();
+
+  _selecFecha(BuildContext context) async {
+    final DateTime? selected = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(1999),
+      lastDate: DateTime(2025),
+    );
+    if (selected != null && selected != selectedDate) {
+      setState(() {
+        String formatted = formatter.format(selected);
+        //selectedDate = selected;
+        fechaControler.text = formatted;
+      });
+    }
   }
 
   Widget _generoTextField() {
@@ -251,16 +270,22 @@ class _RegistroPageState extends State<RegistroPage> {
         builder: (BuildContext context, AsyncSnapshot snapshot) {
       return Container(
         padding: EdgeInsets.symmetric(horizontal: 35.0),
-        child: TextField(
-          controller: generoControler,
-          keyboardType: TextInputType.emailAddress,
-          decoration: InputDecoration(
-            icon: Icon(Icons.supervised_user_circle),
-            hintText: 'Hombre o Mujer',
-            labelText: 'Genero',
-          ),
-          onChanged: (value) {},
-        ),
+        child: DropdownButtonFormField(
+            decoration:
+                InputDecoration(icon: Icon(Icons.supervised_user_circle)),
+            onChanged: (v) {
+              setState(() {
+                genero = v.toString();
+                generoControler.text = genero;
+              });
+            },
+            value: genero,
+            items: ['Sexo', 'Femenino', 'Masculino', 'Otro']
+                .map((v) => DropdownMenuItem(
+                      child: Text(v),
+                      value: v,
+                    ))
+                .toList()),
       );
     });
   }
@@ -375,15 +400,25 @@ class _RegistroPageState extends State<RegistroPage> {
   }
 
   Future<void> verificarDatos() async {
-    passwordControler.text == password2Controler.text
-        ? emailControler.text.isNotEmpty &&
-                passwordControler.text.isNotEmpty &&
-                password2Controler.text.isNotEmpty &&
-                nameControler.text.isNotEmpty &&
-                fechaControler.text.isNotEmpty
-            ? uploadStatusImage()
-            : displayDialog("Debes llenar todos los campos!")
-        : displayDialog("Las contraseñas deben coincidir!");
+    if (imagen == null) {
+      showDialog(
+          context: context,
+          builder: (c) {
+            return ErrorAlertDialog(
+              message: "Selecciona una imagen de perfil",
+            );
+          });
+    } else {
+      passwordControler.text == password2Controler.text
+          ? emailControler.text.isNotEmpty &&
+                  passwordControler.text.isNotEmpty &&
+                  password2Controler.text.isNotEmpty &&
+                  nameControler.text.isNotEmpty &&
+                  fechaControler.text.isNotEmpty
+              ? uploadStatusImage()
+              : displayDialog("Debes llenar todos los campos!")
+          : displayDialog("Las contraseñas deben coincidir!");
+    }
   }
 
   displayDialog(String msg) {
@@ -407,7 +442,6 @@ class _RegistroPageState extends State<RegistroPage> {
           );
         });
     User? firebaseUser;
-    firebaseUser!.sendEmailVerification();
     await _auth
         .createUserWithEmailAndPassword(
       email: emailControler.text.trim(),
@@ -459,6 +493,13 @@ class _RegistroPageState extends State<RegistroPage> {
   }
 
   void uploadStatusImage() async {
+    showDialog(
+        context: context,
+        builder: (c) {
+          return LoadingAlertDialog(
+            message: "Verificando tu cuenta...",
+          );
+        });
     String imageFileName = DateTime.now().microsecondsSinceEpoch.toString();
 
     Reference storageReference =

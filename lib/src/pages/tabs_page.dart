@@ -7,6 +7,8 @@ import 'package:firebase_core/firebase_core.dart';
 //import 'package:firebase_database/firebase_database.dart';
 //import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:frame_conf/home_page2.dart';
+import 'package:frame_conf/src/pages/actividades.dart';
 
 import 'package:frame_conf/src/pages/profile_page.dart';
 import 'package:frame_conf/src/widgets/user.dart';
@@ -186,6 +188,31 @@ class _TabsPage extends State<TabsPage> {
     );
   }
 
+  Container MyArticle4(String imageVal) {
+    return Container(
+      child: ElevatedButton(
+        style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(Colors.white)),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Actividades()),
+          );
+        },
+        child: Container(
+          width: 208,
+          child: Card(
+            child: Wrap(
+              children: <Widget>[
+                Image.asset(imageVal),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Container MyArticle1(String imageVal) {
     return Container(
       child: ElevatedButton(
@@ -245,35 +272,11 @@ class _TabsPage extends State<TabsPage> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Cuestionario()),
+            MaterialPageRoute(builder: (context) => HomePage2()),
           );
         },
         child: Container(
           width: 170,
-          child: Card(
-            child: Wrap(
-              children: <Widget>[
-                Image.asset(imageVal),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Container MyArticle4(String imageVal) {
-    return Container(
-      child: ElevatedButton(
-        style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(
-          Color.fromARGB(255, 137, 150, 245),
-        )),
-        onPressed: () {
-          MaterialPageRoute(builder: (context) => TabsPage());
-        },
-        child: Container(
-          width: 165,
           child: Card(
             child: Wrap(
               children: <Widget>[
@@ -362,17 +365,22 @@ class _TabsPage extends State<TabsPage> {
                 MyArticle1("assets/images/btn2.PNG"),
                 MyArticle2("assets/images/btn3.PNG"),
                 MyArticle3("assets/images/btn4.PNG"),
+                MyArticle4("assets/images/actividades.png"),
 
                 // tabs[_currentIndex]
               ],
             ),
           ),
           Container(
-            height: 620,
+            height: 800,
             color: Colors.white,
             child: StreamBuilder<QuerySnapshot>(
-              stream:
-                  FirebaseFirestore.instance.collection("hobbies").snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection("hobbies")
+                  .orderBy(
+                    "titulo",
+                  )
+                  .snapshots(),
               builder: (context, AsyncSnapshot snapshot) {
                 if (!snapshot.hasData) {
                   return Center(

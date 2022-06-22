@@ -261,7 +261,15 @@ class _PageConfigState extends State<PageConfig> {
             ),
             GestureDetector(
               onTap: () => {
+                showDialog(
+                    context: context,
+                    builder: (c) {
+                      return LoadingAlertDialog(
+                        message: "Verificando tu cuenta...",
+                      );
+                    }),
                 _auth.signOut(),
+                Navigator.pop(context),
                 Navigator.pushNamedAndRemoveUntil(
                     context, 'login', (route) => false)
               },

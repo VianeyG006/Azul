@@ -147,7 +147,7 @@ class _HomePageState extends State<HomePage> {
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
-              title: Text("Eliminar contacto"),
+              title: Text("Eliminar Nota"),
               content: Text("¿Esta seguro de que quiere eliminar esta nota"),
               actions: [
                 TextButton(onPressed: _dismissDialog, child: Text("Cancelar")),

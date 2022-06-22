@@ -58,6 +58,10 @@ dependencies:
   url_launcher_web: ^2.0.11
   native_notify: ^0.0.13
   flutter_phone_direct_caller: ^2.1.1
+  firebase_messaging: ^11.4.1
+  carousel_slider: ^4.1.1
+  sudoku_solver_generator: ^2.1.0+1
+  quiver: ^3.1.0
 
 dev_dependencies:
   flutter_test:

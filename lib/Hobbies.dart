@@ -46,20 +46,17 @@ class _HobbiesState extends State<Hobbies> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SingleChildScrollView(
-              child: GridView.builder(
-                shrinkWrap: true,
-                itemBuilder: (ctx, index) {
-                  return prepareList(index);
-                },
-                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 150,
-                  childAspectRatio: 2 / 2,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20,
-                ),
-                itemCount: Menu.length,
+            GridView.builder(
+              shrinkWrap: true,
+              itemBuilder: (ctx, index) {
+                return prepareList(index);
+              },
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 0.1,
+                childAspectRatio: 0.90,
               ),
+              itemCount: Menu.length,
             ),
             RaisedButton(
               color: Color.fromARGB(255, 137, 166, 245),
@@ -102,7 +99,7 @@ class _HobbiesState extends State<Hobbies> {
                     Menu[k].nombre,
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 20,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
